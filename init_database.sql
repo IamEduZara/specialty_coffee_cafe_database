@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS transportation (
     FOREIGN KEY (beansId) REFERENCES beans(beansId)
 );
 
--- Table for suppliers (corrected table name in foreign key)
+-- Table for suppliers
 CREATE TABLE IF NOT EXISTS suppliers (
     supplierId INT PRIMARY KEY,
     name VARCHAR(255),
@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS service_logs (
     FOREIGN KEY (supplierId) REFERENCES suppliers(supplierId)
 );
 
--- Table for sales (as originally scripted, ensuring all referenced tables are created)
+-- Table for sales
 CREATE TABLE IF NOT EXISTS sales (
     saleId INT PRIMARY KEY,
     customerId INT,
@@ -175,7 +175,9 @@ CREATE TABLE IF NOT EXISTS costs (
 -- Table for expenses
 CREATE TABLE IF NOT EXISTS expenses (
     expenseId INT PRIMARY KEY,
+    supplierId INT,
     date DATE,
     concept VARCHAR(255),
-    amount DECIMAL(10, 2)
+    amount DECIMAL(10, 2),
+    FOREIGN KEY(supplierId) REFERENCES suppliers(supplierId)
 );
