@@ -11,7 +11,7 @@ CREATE VIEW VW_ACTIVE_RESERVATIONS AS
 SELECT r.reservationId, r.date, c.name, c.phone, c.email, t.typeDescription, ct.capacity
 FROM reservations AS r
 JOIN customers AS c ON r.customerId = c.customerId
-JOIN reservation_types AS t ON r.reservationTypeId = t.reservatoniTypeId
+JOIN reservation_types AS t ON r.reservationTypeId = t.reservationTypeId
 JOIN c_tables AS ct ON r.tableId = ct.tableId
 WHERE r.cancellation = FALSE
 AND r.date >= CURRENT_DATE();
@@ -99,5 +99,43 @@ BEGIN
     UPDATE products
     SET quantity = quantity + quantity_received
     WHERE productId = product_id;
+END//
+DELIMITER ;
+
+-- Trigger to mark a table as unavailable when a reservation is made
+DELIMITER //
+CREATE TRIGGER SetTableUnavailable
+AFTER INSERT ON reservations
+FOR EACH ROW
+BEGIN
+    UPDATE c_tables
+    SET availability = FALSE
+    WHERE tableId = NEW.tableId;
+END//
+DELIMITER ;
+
+-- Trigger to mark a table as available when a reservation is cancelled
+DELIMITER //
+CREATE TRIGGER SetTableAvailable
+AFTER UPDATE ON reservations
+FOR EACH ROW
+BEGIN
+    IF OLD.cancellation = FALSE AND NEW.cancellation = TRUE THEN
+        UPDATE c_tables
+        SET availability = TRUE
+        WHERE tableId = OLD.tableId;
+    END IF;
+END//
+DELIMITER ;
+
+-- Trigger to update the last visit date of a customer when they make a reservation
+DELIMITER //
+CREATE TRIGGER UpdateLastVisit
+AFTER INSERT ON reservations
+FOR EACH ROW
+BEGIN
+    UPDATE customers
+    SET lastVisitDate = NEW.date
+    WHERE customerId = NEW.customerId;
 END//
 DELIMITER ;
